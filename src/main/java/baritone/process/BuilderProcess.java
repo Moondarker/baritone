@@ -593,6 +593,11 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     if (!MovementHelper.possiblyFlowing(state)) {
                         // if it's a source block then we want to replace it with a throwaway
                         sourceLiquids.add(pos);
+                    } else {
+                        BetterBlockPos actualSource = MovementHelper.findSourceBlock(pos, bcc.bsi);
+                        if (actualSource != null) {
+                            sourceLiquids.add(actualSource);
+                        }
                     }
                 } else {
                     breakable.add(pos);

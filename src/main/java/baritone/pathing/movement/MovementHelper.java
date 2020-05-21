@@ -38,6 +38,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
 
@@ -499,6 +501,35 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || possiblyFlowing(bsi.get0(x - 1, y, z))
                 || possiblyFlowing(bsi.get0(x, y, z + 1))
                 || possiblyFlowing(bsi.get0(x, y, z - 1));
+    }
+
+    static BetterBlockPos findSourceBlock(BetterBlockPos pos, BlockStateInterface bsi) {
+        IBlockState state = bsi.get0(pos);
+
+        if (!(state.getBlock() instanceof BlockLiquid)) return null;
+
+        if (state.getValue(BlockLiquid.LEVEL) != 0) {
+            List<BetterBlockPos> neighbours = new ArrayList<>();
+
+            neighbours.add(new BetterBlockPos(pos.x-1, pos.y, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x+1, pos.y, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y-1, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y+1, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y, pos.z-1));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y, pos.z+1));
+
+            for(BetterBlockPos nbPos: neighbours) {
+                IBlockState nbState = bsi.get0(nbPos);
+                if (nbState.getBlock() instanceof BlockLiquid && nbState.getValue(BlockLiquid.LEVEL) < state.getValue(BlockLiquid.LEVEL)) {
+                    BetterBlockPos res = findSourceBlock(nbPos, bsi);
+                    if (res != null) return res;
+                }
+            };
+
+            return null;
+        } else {
+            return pos;
+        }
     }
 
 
