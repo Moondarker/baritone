@@ -37,6 +37,7 @@ import baritone.api.utils.input.Input;
 import baritone.pathing.movement.CalculationContext;
 import baritone.pathing.movement.Movement;
 import baritone.pathing.movement.MovementHelper;
+import baritone.pathing.movement.MovementState;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
@@ -208,7 +209,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     IBlockState curr = bcc.bsi.get0(x, y, z);
                     if (curr.getBlock() != Blocks.AIR && !(curr.getBlock() instanceof BlockLiquid) && !valid(curr, desired, false)) {
                         BetterBlockPos pos = new BetterBlockPos(x, y, z);
-                        Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance());
+                        Optional<Rotation> rot = RotationUtils.reachable(ctx.player(), pos, ctx.playerController().getBlockReachDistance(true));
                         if (rot.isPresent()) {
                             return Optional.of(new Tuple<>(pos, rot.get()));
                         }
@@ -218,6 +219,39 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
         return Optional.empty();
     }
+
+	private PathingCommand replaceUnwantedLava(BuilderCalculationContext bcc) {
+		BetterBlockPos center = ctx.playerFeet();
+		for (int dx = -5; dx <= 5; dx++) {
+            for (int dy = 0; dy <= 3; dy++) {
+                for (int dz = -5; dz <= 5; dz++) {
+                    int x = center.x + dx;
+                    int y = center.y + dy;
+                    int z = center.z + dz;
+                    IBlockState curr = bcc.bsi.get0(x, y, z);
+					if (bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z)) == null && MovementHelper.isLava(curr.getBlock())) {
+						MovementState fake = new MovementState();
+						switch (MovementHelper.attemptToPlaceABlock(fake, baritone, new BetterBlockPos(x, y, z), false, false)) {
+							case NO_OPTION:
+							    logDebug("No way to replace lava, we're doomed");
+								continue;
+							case READY_TO_PLACE:
+								baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+								return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+							case ATTEMPTING:
+								// patience
+								baritone.getLookBehavior().updateTarget(fake.getTarget().getRotation().get(), true);
+								return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+							default:
+								throw new IllegalStateException();
+						}
+					}
+				}
+			}
+		}
+
+		return null;
+	}
 
     public static class Placement {
 
@@ -419,6 +453,14 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             trim();
         }
 
+		if (Baritone.settings().buildReplaceLava.value) {
+			PathingCommand lavaCtrl = replaceUnwantedLava(bcc);
+
+			if (lavaCtrl != null) {
+				return lavaCtrl;
+			}
+		}
+
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
             // we'd like to pause to break this block
@@ -588,17 +630,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
             } else {
                 if (state.getBlock() instanceof BlockLiquid) {
-                    // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
-                    // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
-                    if (!MovementHelper.possiblyFlowing(state)) {
-                        // if it's a source block then we want to replace it with a throwaway
-                        sourceLiquids.add(pos);
-                    } else {
-                        BetterBlockPos actualSource = MovementHelper.findSourceBlock(pos, bcc.bsi);
-                        if (actualSource != null) {
-                            sourceLiquids.add(actualSource);
-                        }
-                    }
+					if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()))) {
+                    	// if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
+                    	// TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
+                    	if (!MovementHelper.possiblyFlowing(state)) {
+                        	// if it's a source block then we want to replace it with a throwaway
+                        	sourceLiquids.add(pos);
+                    	} else {
+                        	BetterBlockPos actualSource = MovementHelper.findSourceBlock(pos, bcc.bsi);
+                        	if (actualSource != null) {
+                            	sourceLiquids.add(actualSource);
+                        	}
+                    	}
+					}
                 } else {
                     breakable.add(pos);
                 }

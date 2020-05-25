@@ -266,6 +266,11 @@ public final class Settings {
      * Block reach distance
      */
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
+	
+    /**
+     * Block break distance
+     */
+    public final Setting<Float> blockBreakDistance = new Setting<>(4.5f);
 
     /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
@@ -761,6 +766,11 @@ public final class Settings {
      * How many times to buildrepeat. -1 for infinite.
      */
     public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
+
+    /**
+     * Replace unwanted lava with throwaways
+     */
+    public final Setting<Boolean> buildReplaceLava = new Setting<>(false);
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess
