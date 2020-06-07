@@ -229,7 +229,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     int y = center.y + dy;
                     int z = center.z + dz;
                     IBlockState curr = bcc.bsi.get0(x, y, z);
-					if (bcc.getSchematic(x, y, z, bcc.bsi.get0(x, y, z)).getBlock() != Blocks.LAVA && MovementHelper.isLava(curr.getBlock())) {
+					IBlockState desired = bcc.getSchematic(x, y, z, curr);
+					if ((desired == null || (desired != null && desired.getBlock() != Blocks.LAVA)) && MovementHelper.isLava(curr.getBlock())) {
 						MovementState fake = new MovementState();
 						switch (MovementHelper.attemptToPlaceABlock(fake, baritone, new BetterBlockPos(x, y, z), false, false)) {
 							case NO_OPTION:
