@@ -447,7 +447,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             // build repeat time
             layer = 0;
             origin = new BlockPos(origin).add(repeat);
-            logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
+            if (Baritone.settings().buildRepeatMsg.value) {
+                logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
+            }
             return onTick(calcFailed, isSafeToCancel);
         }
         if (Baritone.settings().distanceTrim.value) {

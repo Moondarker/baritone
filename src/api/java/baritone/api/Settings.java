@@ -767,6 +767,11 @@ public final class Settings {
      */
     public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
 
+	/**
+     * Show annoying "Repeating build in vector.." message
+     */
+    public final Setting<Boolean> buildRepeatMsg = new Setting<>(true);
+
     /**
      * Replace unwanted lava with throwaways
      */
