@@ -668,6 +668,11 @@ public final class Settings {
      */
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
+	/**
+     * Preserve tools that are about to break
+     */
+    public final Setting<Boolean> preserveTools = new Setting<>(false);
+
     /**
      * Don't stop walking forward when you need to break blocks in your way
      */

@@ -99,9 +99,22 @@ public class ToolSet {
      * Calculate which tool on the hotbar is best for mining
      *
      * @param b the blockstate to be mined
+     * @param preferSilkTouch is silkTouch preferred
      * @return An int containing the index in the tools array that worked best
      */
-    public int getBestSlot(Block b, boolean preferSilkTouch) {
+	public int getBestSlot(Block b, boolean preferSilkTouch) {
+		return getBestSlot(b, preferSilkTouch, false);
+	}
+
+    /**
+     * Calculate which tool on the hotbar is best for mining
+     *
+     * @param b the blockstate to be mined
+     * @param preferSilkTouch is silkTouch preferred
+     * @param preserveTools should we keep low durability tools or not
+     * @return An int containing the index in the tools array that worked best
+     */
+    public int getBestSlot(Block b, boolean preferSilkTouch, boolean preserveTools) {
         int best = 0;
         double highestSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
@@ -111,6 +124,10 @@ public class ToolSet {
             ItemStack itemStack = player.inventory.getStackInSlot(i);
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
+            if (preserveTools && itemStack != null &&
+                    (itemStack.getMaxDamage() - itemStack.getItemDamage()) < 10) {
+                continue;
+            }
             if (speed > highestSpeed) {
                 highestSpeed = speed;
                 best = i;
