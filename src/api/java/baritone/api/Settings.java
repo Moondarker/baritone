@@ -266,7 +266,7 @@ public final class Settings {
      * Block reach distance
      */
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
-	
+
     /**
      * Block break distance
      */
@@ -766,6 +766,11 @@ public final class Settings {
      * How far to move before repeating the build. 0 to disable repeating on a certain axis, 0,0,0 to disable entirely
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
+
+	/**
+     * Offset from player feet for build origin
+     */
+	public final Setting<Vec3i> buildOriginOffset = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
      * How many times to buildrepeat. -1 for infinite.
