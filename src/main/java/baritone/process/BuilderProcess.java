@@ -73,6 +73,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private boolean paused;
     private int layer;
     private int numRepeats;
+	private int numAntiBTs;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -100,6 +101,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.paused = false;
         this.layer = 0;
         this.numRepeats = 0;
+		this.numAntiBTs = Baritone.settings().buildBacktrackCount.value;
         this.observedCompleted = new LongOpenHashSet();
     }
 
@@ -444,8 +446,20 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 onLostControl();
                 return null;
             }
-            // build repeat time
+
             layer = 0;
+			int backTracksNum = Baritone.settings().buildBacktrackCount.value;
+			if (backTracksNum > 0 && numAntiBTs <= 0) {
+				BlockPos origOrigin = new BlockPos(origin);
+				for (int i = backTracksNum; i >= 0; i--) {
+					origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
+					if (recalc(bcc)) return onTick(calcFailed, isSafeToCancel);
+				}
+				origin = origOrigin;
+			} else {
+				if (numAntiBTs > 0) numAntiBTs--;
+			}
+
             origin = new BlockPos(origin).add(repeat);
             if (Baritone.settings().buildRepeatMsg.value) {
                 logDirect("Repeating build in vector " + repeat + ", new origin is " + origin);
