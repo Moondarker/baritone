@@ -668,7 +668,7 @@ public final class Settings {
      */
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
-	/**
+    /**
      * Preserve tools that are about to break
      */
     public final Setting<Boolean> preserveTools = new Setting<>(false);
@@ -767,22 +767,22 @@ public final class Settings {
      */
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
-	/**
+    /**
      * Offset from player feet for build origin
      */
-	public final Setting<Vec3i> buildOriginOffset = new Setting<>(new Vec3i(0, 0, 0));
+    public final Setting<Vec3i> buildOriginOffset = new Setting<>(new Vec3i(0, 0, 0));
 
-	/**
+    /**
      * How many of old buildrepeats to check (useful on low TPS and with bad anticheats)
      */
-	public final Setting<Integer> buildBacktrackCount = new Setting<>(0);
+    public final Setting<Integer> buildBacktrackCount = new Setting<>(0);
 
     /**
      * How many times to buildrepeat. -1 for infinite.
      */
     public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
 
-	/**
+    /**
      * Show annoying "Repeating build in vector.." message
      */
     public final Setting<Boolean> buildRepeatMsg = new Setting<>(true);

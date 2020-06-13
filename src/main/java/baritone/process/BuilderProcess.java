@@ -73,7 +73,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private boolean paused;
     private int layer;
     private int numRepeats;
-	private int numAntiBTs;
+    private int numAntiBTs;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -101,7 +101,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.paused = false;
         this.layer = 0;
         this.numRepeats = 0;
-		this.numAntiBTs = Baritone.settings().buildBacktrackCount.value;
+        this.numAntiBTs = Baritone.settings().buildBacktrackCount.value;
         this.observedCompleted = new LongOpenHashSet();
     }
 
@@ -222,39 +222,39 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         return Optional.empty();
     }
 
-	private PathingCommand replaceUnwantedLava(BuilderCalculationContext bcc) {
-		BetterBlockPos center = ctx.playerFeet();
-		for (int dx = -5; dx <= 5; dx++) {
+    private PathingCommand replaceUnwantedLava(BuilderCalculationContext bcc) {
+        BetterBlockPos center = ctx.playerFeet();
+        for (int dx = -5; dx <= 5; dx++) {
             for (int dy = 0; dy <= 3; dy++) {
                 for (int dz = -5; dz <= 5; dz++) {
                     int x = center.x + dx;
                     int y = center.y + dy;
                     int z = center.z + dz;
                     IBlockState curr = bcc.bsi.get0(x, y, z);
-					IBlockState desired = bcc.getSchematic(x, y, z, curr);
-					if ((desired == null || (desired != null && desired.getBlock() != Blocks.LAVA)) && MovementHelper.isLava(curr.getBlock())) {
-						MovementState fake = new MovementState();
-						switch (MovementHelper.attemptToPlaceABlock(fake, baritone, new BetterBlockPos(x, y, z), false, false)) {
-							case NO_OPTION:
-							    logDebug("No way to replace lava, we're doomed");
-								continue;
-							case READY_TO_PLACE:
-								baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
-								return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-							case ATTEMPTING:
-								// patience
-								baritone.getLookBehavior().updateTarget(fake.getTarget().getRotation().get(), true);
-								return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
-							default:
-								throw new IllegalStateException();
-						}
-					}
-				}
-			}
-		}
+                    IBlockState desired = bcc.getSchematic(x, y, z, curr);
+                    if ((desired == null || (desired != null && desired.getBlock() != Blocks.LAVA)) && MovementHelper.isLava(curr.getBlock())) {
+                        MovementState fake = new MovementState();
+                        switch (MovementHelper.attemptToPlaceABlock(fake, baritone, new BetterBlockPos(x, y, z), false, false)) {
+                            case NO_OPTION:
+                                logDebug("No way to replace lava, we're doomed");
+                                continue;
+                            case READY_TO_PLACE:
+                                baritone.getInputOverrideHandler().setInputForceState(Input.CLICK_RIGHT, true);
+                                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                            case ATTEMPTING:
+                                // patience
+                                baritone.getLookBehavior().updateTarget(fake.getTarget().getRotation().get(), true);
+                                return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
+                            default:
+                                throw new IllegalStateException();
+                        }
+                    }
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
     public static class Placement {
 
@@ -448,17 +448,17 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
 
             layer = 0;
-			int backTracksNum = Baritone.settings().buildBacktrackCount.value;
-			if (backTracksNum > 0 && numAntiBTs <= 0) {
-				BlockPos origOrigin = new BlockPos(origin);
-				for (int i = backTracksNum; i >= 0; i--) {
-					origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
-					if (recalc(bcc)) return onTick(calcFailed, isSafeToCancel);
-				}
-				origin = origOrigin;
-			} else {
-				if (numAntiBTs > 0) numAntiBTs--;
-			}
+            int backTracksNum = Baritone.settings().buildBacktrackCount.value;
+            if (backTracksNum > 0 && numAntiBTs <= 0) {
+                BlockPos origOrigin = new BlockPos(origin);
+                for (int i = backTracksNum; i >= 0; i--) {
+                    origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
+                    if (recalc(bcc)) return onTick(calcFailed, isSafeToCancel);
+                }
+                origin = origOrigin;
+            } else {
+                if (numAntiBTs > 0) numAntiBTs--;
+            }
 
             origin = new BlockPos(origin).add(repeat);
             if (Baritone.settings().buildRepeatMsg.value) {
@@ -470,13 +470,13 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             trim();
         }
 
-		if (Baritone.settings().buildReplaceLava.value) {
-			PathingCommand lavaCtrl = replaceUnwantedLava(bcc);
+        if (Baritone.settings().buildReplaceLava.value) {
+            PathingCommand lavaCtrl = replaceUnwantedLava(bcc);
 
-			if (lavaCtrl != null) {
-				return lavaCtrl;
-			}
-		}
+            if (lavaCtrl != null) {
+                return lavaCtrl;
+            }
+        }
 
         Optional<Tuple<BetterBlockPos, Rotation>> toBreak = toBreakNearPlayer(bcc);
         if (toBreak.isPresent() && isSafeToCancel && ctx.player().onGround) {
@@ -647,19 +647,19 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
             } else {
                 if (state.getBlock() instanceof BlockLiquid) {
-					if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()))) {
-                    	// if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
-                    	// TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
-                    	if (!MovementHelper.possiblyFlowing(state)) {
-                        	// if it's a source block then we want to replace it with a throwaway
-                        	sourceLiquids.add(pos);
-                    	} else {
-                        	BetterBlockPos actualSource = MovementHelper.findSourceBlock(pos, bcc.bsi);
-                        	if (actualSource != null) {
-                            	sourceLiquids.add(actualSource);
-                        	}
-                    	}
-					}
+                    if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()))) {
+                        // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
+                        // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
+                        if (!MovementHelper.possiblyFlowing(state)) {
+                            // if it's a source block then we want to replace it with a throwaway
+                            sourceLiquids.add(pos);
+                        } else {
+                            BetterBlockPos actualSource = MovementHelper.findSourceBlock(pos, bcc.bsi);
+                            if (actualSource != null) {
+                                sourceLiquids.add(actualSource);
+                            }
+                        }
+                    }
                 } else {
                     breakable.add(pos);
                 }
