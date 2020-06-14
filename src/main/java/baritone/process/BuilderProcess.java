@@ -382,7 +382,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         if (backTracksNum > 0 && numAntiBTs <= 0) {
             BlockPos origOrigin = new BlockPos(origin);
             for (int i = backTracksNum; i >= 0; i--) {
-                origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
+                origin = new BlockPos(origOrigin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
                 if (recalc(bcc)) return true;
             }
             origin = origOrigin;
