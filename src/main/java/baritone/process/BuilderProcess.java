@@ -234,7 +234,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                     IBlockState desired = bcc.getSchematic(x, y, z, curr);
                     if ((desired == null || (desired != null && desired.getBlock() != Blocks.LAVA)) && MovementHelper.isLava(curr.getBlock())) {
                         MovementState fake = new MovementState();
-                        switch (MovementHelper.attemptToPlaceABlock(fake, baritone, new BetterBlockPos(x, y, z), false, false)) {
+                        BetterBlockPos pos = new BetterBlockPos(x, y, z);
+                        switch (MovementHelper.attemptToPlaceABlock(fake, baritone, pos, false, false)) {
                             case NO_OPTION:
                                 logDebug("No way to replace lava, we're doomed");
                                 continue;
@@ -376,6 +377,21 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         }
     }
 
+    private boolean buildBacktrack(BuilderCalculationContext bcc, Vec3i repeat) {
+        int backTracksNum = Baritone.settings().buildBacktrackCount.value;
+        if (backTracksNum > 0 && numAntiBTs <= 0) {
+            BlockPos origOrigin = new BlockPos(origin);
+            for (int i = backTracksNum; i >= 0; i--) {
+                origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
+                if (recalc(bcc)) return true;
+            }
+            origin = origOrigin;
+        } else {
+            if (numAntiBTs > 0) numAntiBTs--;
+        }
+        return false;
+    }
+
     @Override
     public PathingCommand onTick(boolean calcFailed, boolean isSafeToCancel) {
         approxPlaceable = approxPlaceable(36);
@@ -448,17 +464,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             }
 
             layer = 0;
-            int backTracksNum = Baritone.settings().buildBacktrackCount.value;
-            if (backTracksNum > 0 && numAntiBTs <= 0) {
-                BlockPos origOrigin = new BlockPos(origin);
-                for (int i = backTracksNum; i >= 0; i--) {
-                    origin = new BlockPos(origin).add(new Vec3i((-i * repeat.getX()), (-i * repeat.getY()), (-i * repeat.getZ())));
-                    if (recalc(bcc)) return onTick(calcFailed, isSafeToCancel);
-                }
-                origin = origOrigin;
-            } else {
-                if (numAntiBTs > 0) numAntiBTs--;
-            }
+            if (buildBacktrack(bcc, repeat)) return onTick(calcFailed, isSafeToCancel);
 
             origin = new BlockPos(origin).add(repeat);
             if (Baritone.settings().buildRepeatMsg.value) {
@@ -647,7 +653,8 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
                 }
             } else {
                 if (state.getBlock() instanceof BlockLiquid) {
-                    if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()))) {
+                    BetterBlockPos plypos = ctx.playerFeet();
+                    if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()) || ((pos.y - plypos.y) < 0))) {
                         // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
                         // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
                         if (!MovementHelper.possiblyFlowing(state)) {
