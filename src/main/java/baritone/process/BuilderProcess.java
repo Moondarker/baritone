@@ -654,7 +654,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             } else {
                 if (state.getBlock() instanceof BlockLiquid) {
                     BetterBlockPos plypos = ctx.playerFeet();
-                    if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock()) || ((pos.y - plypos.y) < 0))) {
+                    if (!(Baritone.settings().buildReplaceLava.value && MovementHelper.isLava(state.getBlock())) || ((pos.y - plypos.y) <= 0)) {
                         // if the block itself is JUST a liquid (i.e. not just a waterlogged block), we CANNOT break it
                         // TODO for 1.13 make sure that this only matches pure water, not waterlogged blocks
                         if (!MovementHelper.possiblyFlowing(state)) {
