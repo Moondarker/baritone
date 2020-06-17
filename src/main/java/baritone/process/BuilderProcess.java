@@ -41,6 +41,7 @@ import baritone.pathing.movement.MovementState;
 import baritone.utils.BaritoneProcessHelper;
 import baritone.utils.BlockStateInterface;
 import baritone.utils.PathingCommandContext;
+import baritone.utils.NotificationHelper;
 import baritone.utils.schematic.MapArtSchematic;
 import baritone.utils.schematic.SchematicSystem;
 import baritone.utils.schematic.schematica.SchematicaHelper;
@@ -74,6 +75,7 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
     private int layer;
     private int numRepeats;
     private int numAntiBTs;
+    private boolean notifiedBadTools;
     private List<IBlockState> approxPlaceable;
 
     public BuilderProcess(Baritone baritone) {
@@ -102,10 +104,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
         this.layer = 0;
         this.numRepeats = 0;
         this.numAntiBTs = Baritone.settings().buildBacktrackCount.value;
+        this.notifiedBadTools = false;
         this.observedCompleted = new LongOpenHashSet();
     }
 
     public void resume() {
+        notifiedBadTools = false;
         paused = false;
     }
 
@@ -491,7 +495,12 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             Rotation rot = toBreak.get().getSecond();
             BetterBlockPos pos = toBreak.get().getFirst();
             baritone.getLookBehavior().updateTarget(rot, true);
-            MovementHelper.switchToBestToolFor(ctx, bcc.get(pos));
+            if (!MovementHelper.switchToBestToolFor(ctx, bcc.get(pos)) &&
+                Baritone.settings().desktopNotifications.value && !notifiedBadTools)
+            {
+                notifiedBadTools = true;
+                NotificationHelper.notify("Best tools are on low durability, switching to subpar ones", true);
+            }
             if (ctx.player().isSneaking()) {
                 // really horrible bug where a block is visible for breaking while sneaking but not otherwise
                 // so you can't see it, it goes to place something else, sneaks, then the next tick it tries to break
@@ -547,6 +556,9 @@ public final class BuilderProcess extends BaritoneProcessHelper implements IBuil
             if (goal == null) {
                 logDirect("Unable to do it. Pausing. resume to resume, cancel to cancel");
                 paused = true;
+                if (Baritone.settings().desktopNotifications.value) {
+                    NotificationHelper.notify("Process paused due to unexpected circumstances - player intervention required", true);
+                }
                 return new PathingCommand(null, PathingCommandType.REQUEST_PAUSE);
             }
         }

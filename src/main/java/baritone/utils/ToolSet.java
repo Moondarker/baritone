@@ -112,11 +112,12 @@ public class ToolSet {
      * @param b the blockstate to be mined
      * @param preferSilkTouch is silkTouch preferred
      * @param preserveTools should we keep low durability tools or not
-     * @return An int containing the index in the tools array that worked best
+     * @return An int containing the index in the tools array that worked best or negative (index+1) if best tools are not used
      */
     public int getBestSlot(Block b, boolean preferSilkTouch, boolean preserveTools) {
         int best = 0;
         double highestSpeed = Double.NEGATIVE_INFINITY;
+        double highestUnusedSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         IBlockState blockState = b.getDefaultState();
@@ -126,6 +127,7 @@ public class ToolSet {
             boolean silkTouch = hasSilkTouch(itemStack);
             if (preserveTools && itemStack != null &&
                     (itemStack.getMaxDamage() - itemStack.getItemDamage()) < 10) {
+                if (speed > highestUnusedSpeed) highestUnusedSpeed = speed;
                 continue;
             }
             if (speed > highestSpeed) {
@@ -144,7 +146,7 @@ public class ToolSet {
                 }
             }
         }
-        return best;
+        return ((highestSpeed >= highestUnusedSpeed) ? best : ((best+1)*-1));
     }
 
     /**

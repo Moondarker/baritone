@@ -421,9 +421,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @param ctx The player context
      * @param b   the blockstate to mine
+     * @return Whether best tools are used or not
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
-        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
+    static boolean switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
+        return switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
     }
 
     /**
@@ -432,9 +433,12 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ctx The player context
      * @param b   the blockstate to mine
      * @param ts  previously calculated ToolSet
+     * @return Whether best tools are used or not
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
-        ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch, BaritoneAPI.getSettings().preserveTools.value);
+    static boolean switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
+        int bs = ts.getBestSlot(b.getBlock(), preferSilkTouch, BaritoneAPI.getSettings().preserveTools.value);
+        ctx.player().inventory.currentItem = ((bs < 0) ? ((bs*-1)-1) : bs);
+        return (bs >= 0);
     }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
