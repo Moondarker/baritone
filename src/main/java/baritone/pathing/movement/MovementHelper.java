@@ -437,9 +437,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      */
     static boolean switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
         int bs = ts.getBestSlot(b.getBlock(), preferSilkTouch, BaritoneAPI.getSettings().preserveTools.value);
-        ctx.player().inventory.currentItem = ((bs < 0) ? ((bs*-1)-1) : bs);
-        return (bs >= 0);
-    }
+        if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
+            ctx.player().inventory.currentItem = ((bs < 0) ? ((bs*-1)-1) : bs);
+            return (bs >= 0);
+        }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(
@@ -594,5 +595,13 @@ public interface MovementHelper extends ActionCosts, Helper {
 
     enum PlaceResult {
         READY_TO_PLACE, ATTEMPTING, NO_OPTION;
+    }
+
+    static boolean isTransparent(Block b) {
+
+        return b == Blocks.AIR ||
+                b == Blocks.FLOWING_LAVA ||
+                b == Blocks.FLOWING_WATER ||
+                b == Blocks.WATER;
     }
 }
