@@ -439,8 +439,9 @@ public interface MovementHelper extends ActionCosts, Helper {
         int bs = ts.getBestSlot(b.getBlock(), preferSilkTouch, false, BaritoneAPI.getSettings().preserveTools.value);
         if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
             ctx.player().inventory.currentItem = ((bs < 0) ? ((bs*-1)-1) : bs);
-            return (bs >= 0);
         }
+        return (bs >= 0);
+    }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(

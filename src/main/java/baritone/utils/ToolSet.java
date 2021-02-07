@@ -104,7 +104,7 @@ public class ToolSet {
      * @return An int containing the index in the tools array that worked best
      */
     public int getBestSlot(Block b, boolean preferSilkTouch) {
-        return getBestSlot(b, preferSilkTouch, false);
+        return getBestSlot(b, preferSilkTouch, false, false);
     }
 
     /**
@@ -169,8 +169,7 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(
-          (b, false, true));
+        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false, true, false));
         return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
     }
 
