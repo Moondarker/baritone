@@ -38,6 +38,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 
 import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 
 import static baritone.pathing.movement.Movement.HORIZONTALS_BUT_ALSO_DOWN_____SO_EVERY_DIRECTION_EXCEPT_UP;
 
@@ -419,9 +421,10 @@ public interface MovementHelper extends ActionCosts, Helper {
      *
      * @param ctx The player context
      * @param b   the blockstate to mine
+     * @return Whether best tools are used or not
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
-        switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
+    static boolean switchToBestToolFor(IPlayerContext ctx, IBlockState b) {
+        return switchToBestToolFor(ctx, b, new ToolSet(ctx.player()), BaritoneAPI.getSettings().preferSilkTouch.value);
     }
 
     /**
@@ -430,12 +433,14 @@ public interface MovementHelper extends ActionCosts, Helper {
      * @param ctx The player context
      * @param b   the blockstate to mine
      * @param ts  previously calculated ToolSet
+     * @return Whether best tools are used or not
      */
-    static void switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
+    static boolean switchToBestToolFor(IPlayerContext ctx, IBlockState b, ToolSet ts, boolean preferSilkTouch) {
+        int bs = ts.getBestSlot(b.getBlock(), preferSilkTouch, BaritoneAPI.getSettings().preserveTools.value);
         if (!Baritone.settings().disableAutoTool.value && !Baritone.settings().assumeExternalAutoTool.value) {
-            ctx.player().inventory.currentItem = ts.getBestSlot(b.getBlock(), preferSilkTouch);
+            ctx.player().inventory.currentItem = ((bs < 0) ? ((bs*-1)-1) : bs);
+            return (bs >= 0);
         }
-    }
 
     static void moveTowards(IPlayerContext ctx, MovementState state, BlockPos pos) {
         state.setTarget(new MovementTarget(
@@ -501,6 +506,35 @@ public interface MovementHelper extends ActionCosts, Helper {
                 || possiblyFlowing(bsi.get0(x - 1, y, z))
                 || possiblyFlowing(bsi.get0(x, y, z + 1))
                 || possiblyFlowing(bsi.get0(x, y, z - 1));
+    }
+
+    static BetterBlockPos findSourceBlock(BetterBlockPos pos, BlockStateInterface bsi) {
+        IBlockState state = bsi.get0(pos);
+
+        if (!(state.getBlock() instanceof BlockLiquid)) return null;
+
+        if (state.getValue(BlockLiquid.LEVEL) != 0) {
+            List<BetterBlockPos> neighbours = new ArrayList<>();
+
+            neighbours.add(new BetterBlockPos(pos.x-1, pos.y, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x+1, pos.y, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y-1, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y+1, pos.z));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y, pos.z-1));
+            neighbours.add(new BetterBlockPos(pos.x, pos.y, pos.z+1));
+
+            for(BetterBlockPos nbPos: neighbours) {
+                IBlockState nbState = bsi.get0(nbPos);
+                if (nbState.getBlock() instanceof BlockLiquid && nbState.getValue(BlockLiquid.LEVEL) < state.getValue(BlockLiquid.LEVEL)) {
+                    BetterBlockPos res = findSourceBlock(nbPos, bsi);
+                    if (res != null) return res;
+                }
+            };
+
+            return null;
+        } else {
+            return pos;
+        }
     }
 
 

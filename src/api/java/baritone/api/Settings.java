@@ -290,6 +290,11 @@ public final class Settings {
     public final Setting<Float> blockReachDistance = new Setting<>(4.5f);
 
     /**
+     * Block break distance
+     */
+    public final Setting<Float> blockBreakDistance = new Setting<>(4.5f);
+
+    /**
      * How many degrees to randomize the pitch and yaw every tick. Set to 0 to disable
      */
     public final Setting<Double> randomLooking = new Setting<>(0.01d);
@@ -708,6 +713,11 @@ public final class Settings {
     public final Setting<Boolean> preferSilkTouch = new Setting<>(false);
 
     /**
+     * Preserve tools that are about to break
+     */
+    public final Setting<Boolean> preserveTools = new Setting<>(false);
+
+    /**
      * Don't stop walking forward when you need to break blocks in your way
      */
     public final Setting<Boolean> walkWhileBreaking = new Setting<>(true);
@@ -830,9 +840,29 @@ public final class Settings {
     public final Setting<Vec3i> buildRepeat = new Setting<>(new Vec3i(0, 0, 0));
 
     /**
+     * Offset from player feet for build origin
+     */
+    public final Setting<Vec3i> buildOriginOffset = new Setting<>(new Vec3i(0, 0, 0));
+
+    /**
+     * How many of old buildrepeats to check (useful on low TPS and with bad anticheats)
+     */
+    public final Setting<Integer> buildBacktrackCount = new Setting<>(0);
+
+    /**
      * How many times to buildrepeat. -1 for infinite.
      */
     public final Setting<Integer> buildRepeatCount = new Setting<>(-1);
+
+    /**
+     * Show annoying "Repeating build in vector.." message
+     */
+    public final Setting<Boolean> buildRepeatMsg = new Setting<>(true);
+
+    /**
+     * Replace unwanted lava with throwaways
+     */
+    public final Setting<Boolean> buildReplaceLava = new Setting<>(false);
 
     /**
      * Allow standing above a block while mining it, in BuilderProcess

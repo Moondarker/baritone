@@ -100,14 +100,22 @@ public class ToolSet {
      * related to auto tool movement cost, it will either return current selected slot, or the best slot.
      *
      * @param b the blockstate to be mined
+     * @param preferSilkTouch is silkTouch preferred
      * @return An int containing the index in the tools array that worked best
      */
-
     public int getBestSlot(Block b, boolean preferSilkTouch) {
         return getBestSlot(b, preferSilkTouch, false);
     }
 
-    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation) {
+    /**
+     * Calculate which tool on the hotbar is best for mining
+     *
+     * @param b the blockstate to be mined
+     * @param preferSilkTouch is silkTouch preferred
+     * @param preserveTools should we keep low durability tools or not
+     * @return An int containing the index in the tools array that worked best or negative (index+1) if best tools are not used
+     */
+    public int getBestSlot(Block b, boolean preferSilkTouch, boolean pathingCalculation, boolean preserveTools) {
 
         /*
         If we actually want know what efficiency our held item has instead of the best one
@@ -119,6 +127,7 @@ public class ToolSet {
 
         int best = 0;
         double highestSpeed = Double.NEGATIVE_INFINITY;
+        double highestUnusedSpeed = Double.NEGATIVE_INFINITY;
         int lowestCost = Integer.MIN_VALUE;
         boolean bestSilkTouch = false;
         IBlockState blockState = b.getDefaultState();
@@ -129,6 +138,11 @@ public class ToolSet {
             }
             double speed = calculateSpeedVsBlock(itemStack, blockState);
             boolean silkTouch = hasSilkTouch(itemStack);
+            if (preserveTools && itemStack != null &&
+                    (itemStack.getMaxDamage() - itemStack.getItemDamage()) < 10) {
+                if (speed > highestUnusedSpeed) highestUnusedSpeed = speed;
+                continue;
+            }
             if (speed > highestSpeed) {
                 highestSpeed = speed;
                 best = i;
@@ -145,7 +159,7 @@ public class ToolSet {
                 }
             }
         }
-        return best;
+        return ((highestSpeed >= highestUnusedSpeed) ? best : ((best+1)*-1));
     }
 
     /**
@@ -155,7 +169,8 @@ public class ToolSet {
      * @return A double containing the destruction ticks with the best tool
      */
     private double getBestDestructionTime(Block b) {
-        ItemStack stack = player.inventory.getStackInSlot(getBestSlot(b, false, true));
+        ItemStack stack = player.inventory.getStackInSlot(
+          (b, false, true));
         return calculateSpeedVsBlock(stack, b.getDefaultState()) * avoidanceMultiplier(b);
     }
 

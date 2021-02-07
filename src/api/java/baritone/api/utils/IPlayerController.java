@@ -56,6 +56,10 @@ public interface IPlayerController {
 
     void setHittingBlock(boolean hittingBlock);
 
+	default double getBlockReachDistance(boolean isBreak) {
+        return isBreak ? (this.getGameType().isCreative() ? 5.0F : BaritoneAPI.getSettings().blockBreakDistance.value) : getBlockReachDistance();
+    }
+
     default double getBlockReachDistance() {
         return this.getGameType().isCreative() ? 5.0F : BaritoneAPI.getSettings().blockReachDistance.value;
     }
